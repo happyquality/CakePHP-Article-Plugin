@@ -65,29 +65,27 @@ class ArticleBehavior extends ModelBehavior {
 	public function afterSave(Model $model, $created) {
 
 		foreach ($this->settings[$model->alias] as $field => $options) {
-			if (!empty($model->data[$model->alias][$field])) {
-				// Whether or not to publish articles
-				$published = false;
-				if (!empty($model->data[$model->alias][$field.'_published'])) {
-					$published = true;
-				}
-				// Create the data to be saved article
-				$article[$this->attacheModel] = array(
-					'model' => $model->alias,
-					'model_id' => $model->id,
-					'model_field' => $field,
-					'content' => $model->data[$model->alias][$field],
-					'published' => $published,
-					'posted' => date('Y-m-d H:i:s'),
-				);
+			if (empty($model->data[$model->alias][$field])) {
+				continue;
+			}
+			// Whether or not to publish articles
+			$published = false;
+			if (!empty($model->data[$model->alias][$field.'_published'])) {
+				$published = true;
+			}
+			// Create the data to be saved article
+			$article[$this->attacheModel] = array(
+				'model' => $model->alias,
+				'model_id' => $model->id,
+				'model_field' => $field,
+				'content' => $model->data[$model->alias][$field],
+				'published' => $published,
+				'posted' => date('Y-m-d H:i:s'),
+			);
 
-				$this->log($created);
-				$this->log($article);
-
-				$this->runtime[$model->alias]->create();
-				if (!$this->runtime[$model->alias]->save($article)) {
-					return false;
-				}
+			$this->runtime[$model->alias]->create();
+			if (!$this->runtime[$model->alias]->save($article)) {
+				return false;
 			}
 		}
 
